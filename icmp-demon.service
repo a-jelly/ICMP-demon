@@ -1,0 +1,10 @@
+[Unit]
+Description=ICMP demon
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/sbin/icmp_demon -c /etc/icmp_demon/config.toml -d
+
+[Install]
+WantedBy=multi-user.target

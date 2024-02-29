@@ -1,0 +1,23 @@
+# Here is ICMP daemon cfg
+[log]
+    use_syslog = 0
+
+[network]
+    # bind_interface = "eth0"
+    # bind_address = "192.168.1.1"
+    only_from = ["192.168.1.0/24", "192.168.2.0/24"]
+    repeat_timeout = -1   	# ICMP sequence 1 only
+    # repeat_timeout = 5  	# 5 sec. timeout for host
+    ping_type = "all"	 	# values: raw, 32bit, 64bit, all
+
+[script.open]
+    user = "root"
+    group = "root"
+    hex_content = "cafebabe"
+    path = "./ssh_port_open.sh"
+
+[script.close]
+    user = "root"
+    group = "root"
+    hex_content = "deadface"
+    path = "./ssh_port_close.sh"

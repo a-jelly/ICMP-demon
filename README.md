@@ -57,9 +57,10 @@ Here is an example of a configuration file:
     hex_content = "deadface"
     path = "/usr/local/sbin/ssh_port_close.sh" # script to close SSH port   
 ```
-A few options need some explanation. To protect against repeated execution of the action (say, if the administrator forgets to specify the number of attempts in ping), there are two possibilities
-	- specify a timeout in seconds during which packets from this address will be ignored.
-	- Set **repeat_timeout** = -1, in this case the daemon will consider only the first packet in the ICMP sequence.
+A few options need some explanation. To protect against repeated execution of the action (say, if the administrator forgets to specify the number of attempts in ping), there are two possibilities:
+- specify a timeout in seconds during which packets from this address will be ignored.
+- Set **repeat_timeout** = -1, in this case the daemon will consider only the first packet in the ICMP sequence.
+  
 The second interesting option is **ping_type**. It specifies which types of packets to analyze. Due to implementation peculiarities, an ICMP packet in 32-bit and 64-bit systems has a different format (different timestamp length). The daemon can react to each of them. There are also special utilities like nping that allow you to put any data into the data field of an ICMP packet. If you want to perceive such packets, use the "raw" option. If you want to analyze packets of all three types, use the "all" option. 
  
 The scripts section describes each individual script that is launched by the daemon in case the content in the packet matches the one described in the script configuration. Content can be specified in two forms - **hex_content** - in hexadecimal form (for the **ping** utility) and in string form (if you want to use **nping**). Due to ping implementation peculiarities, the length of hex_content must be a multiple of 4 bytes (8 hexadecimal digits) - otherwise no match will occur. The rest of the fields are self-explanatory: the user and group on behalf of which the script is run and the path to the script.

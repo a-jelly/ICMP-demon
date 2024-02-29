@@ -19,10 +19,10 @@ Superuser rights are required for the daemon to listen to raw socket.
 
 Download the source code from github-repo, install GCC and GNU make.
 ```
-    git clone https://github.com/a-jelly/ICMP-demon
-    cd ICMP-demon
-    make
-    make install
+git clone https://github.com/a-jelly/ICMP-demon
+cd ICMP-demon
+make
+make install
 ```    
 The make install command will install the ICMP-demon service description file into /usr/lib/systemd/system and the daemon itself into /usr/local/sbin
 The configuration file in this case should be placed in /etc/icmp_demon/config.toml
@@ -92,16 +92,16 @@ The following options are available:
 
 To start in foreground use the command:
 ```
-   sudo ./icmp_demon -c config.toml
+sudo ./icmp_demon -c config.toml
 ```
 To start in systemd service mode use:
 ```
-   systemctl enable icmp-demon
-   systemctl start icmp-demon
+systemctl enable icmp-demon
+systemctl start icmp-demon
 ```   
 To stop the service, issue:
 ```
-   systemctl stop icmp-demon
+systemctl stop icmp-demon
 ```   
 Be careful, if the configuration is incorrect or if you stop the ICMP demon and forget to enable SSH, you may lose remote access to the server.
 

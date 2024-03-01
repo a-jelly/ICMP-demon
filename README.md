@@ -24,8 +24,8 @@ cd ICMP-demon
 make
 make install
 ```    
-The make install command will install the ICMP-demon service description file into /usr/lib/systemd/system and the daemon itself into /usr/local/sbin
-The configuration file in this case should be placed in /etc/icmp_demon/config.toml
+The make install command will install the ICMP-demon service description file into ``/usr/lib/systemd/system`` and the daemon itself into ``/usr/local/sbin``
+The configuration file in this case should be placed in ``/etc/icmp_demon/config.toml``
 
 ## Configuration
 

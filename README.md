@@ -5,7 +5,7 @@ If you are a system administrator, you are probably tired of watching logs that 
 
 ### How does it work?
 
-The ICMP demon listens to the RAW-socket on the server, and analyzes the contents of incoming ping packets. If the contents match one of those described in the configuration file and the address from which the packets came is on the allowed list, the daemon runs the script defined in the configuration file. There is protection against re-running (since ping generates more than one packet by default). 
+The ICMP demon listens to the RAW-socket on the server, and analyzes the contents of incoming ping packets. If the contents match one of those described in the configuration file and the source address is in allowed list, the daemon runs the script defined in the configuration file. There is protection against re-running (since ping generates more than one packet by default). 
 
 
 ## Example of use

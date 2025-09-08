@@ -55,6 +55,7 @@
 #include "toml.h"
 #include "utils.h"
 
+#define VERSION "1.0.1rc"
 #define MAX_IP_PACKET_SIZE 65536
 #define HOST_TIMEOUT 5
 
@@ -184,7 +185,7 @@ int parse_config(const char *config_file, config_desc_t *config) {
 
     fp = fopen(config_file, "r");
     if (!fp) {
-        fprintf(stderr, "Config file not found!\n");
+        fprintf(stderr, "Config file [%s] not found!\n", config_file);
         return rc;
     }
 
@@ -301,6 +302,8 @@ int parse_config(const char *config_file, config_desc_t *config) {
 
     toml_free(conf);
     fclose(fp);
+    slog(LOG_INFO, verbose_level, use_syslog, "Config file [%s] successfully loaded\n", config_file);
+    rc=0;
     return rc;
 }
 
@@ -504,6 +507,7 @@ int process_socket(config_desc_t *config) {
     signal(SIGINT, sigHandler);
     signal(SIGTERM, sigHandler);
 
+    // Check only ICMP packets
     sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (sockfd < 0) {
         slog(LOG_ERR, verbose_level, use_syslog, "ICMP socket error! You are root?");
@@ -550,6 +554,7 @@ int process_socket(config_desc_t *config) {
 
     cli_len = sizeof(struct sockaddr_in);
 
+    // Ok, real loop
     while (1) {
 
         fds[0].fd = sockfd;
@@ -568,6 +573,7 @@ int process_socket(config_desc_t *config) {
         }
 
         if (fds[0].revents & POLLIN) {
+            memset(buf, 0, sizeof(buf));
             n = recvfrom(sockfd, buf, MAX_IP_PACKET_SIZE, 0, (struct sockaddr *) &cliaddr, &cli_len);
             if (n <= 0) {
                 slog(LOG_ERR, verbose_level, use_syslog, "recvfrom() error: %s ", strerror(errno));
@@ -576,6 +582,10 @@ int process_socket(config_desc_t *config) {
 
             struct iphdr *ip_hdr = (struct iphdr *) buf;
             slog(LOG_DEBUG, verbose_level, use_syslog, "[%d] bytes received, IP header is %d bytes.", n, ip_hdr->ihl * 4);
+            if ((ip_hdr->ihl * 4) < sizeof(struct iphdr) || (ip_hdr->ihl * 4) >= n) {
+                slog(LOG_WARNING, verbose_level, use_syslog, "Malformed IP packet: invalid IHL value %d", ip_hdr->ihl);
+                continue;
+            }
 
             struct icmphdr *icmp_hdr = (struct icmphdr *) ((char *) ip_hdr + (4 * ip_hdr->ihl));
             slog(LOG_DEBUG, verbose_level, use_syslog, "ICMP msgtype=[%d], code=[%d]", icmp_hdr->type, icmp_hdr->code);
@@ -610,13 +620,6 @@ int process_socket(config_desc_t *config) {
 
                 int offset = sizeof(struct iphdr) + sizeof(struct icmphdr);
                 slog(LOG_DEBUG, verbose_level, use_syslog, "Content: (%d bytes) from: %d", n - offset, offset);
-
-                /*
-                for (i = offset; i < n; i++) {
-                    printf("%02X%s", (uint8_t) buf[i], (i + 1) % 16 ? " " : "\n");
-                }
-                printf("\n");
-                */
 
                 for (i = 0; i < script_cnt; i++) {
                     int rc= Check_ping_content(buf, n, ping_type, scripts[i].content, scripts[i].content_len);
@@ -731,11 +734,14 @@ int main(int argc, char **argv) {
     else {
         cfg = malloc(sizeof(config_desc_t));
         memset(cfg, 0, sizeof(config_desc_t));
-        parse_config(config_name, cfg);
+        int rc=parse_config(config_name, cfg);
+        if (rc!=0) {
+            exit(4);
+        }
     }
 
     openlog("icmp-demon", LOG_PID, LOG_USER);
-    slog(LOG_WARNING, verbose_level, use_syslog, "ICMP demon started");
+    slog(LOG_WARNING, verbose_level, use_syslog, "ICMP demon [%s] started", VERSION);
 
     if (run_as_daemon == 0) {
         process_socket(cfg);

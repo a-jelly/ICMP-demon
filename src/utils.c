@@ -86,7 +86,7 @@ void Hash_Delete(khash_t(m32) *h, int key) {
 
 void slog(int priority, int verbose_level, int use_syslog, const char* format, ...) {
     va_list args;
-    char buffer[256];
+    char buffer[1024];
 
     if (priority>verbose_level) {
         // No log

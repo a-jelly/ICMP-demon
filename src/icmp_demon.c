@@ -56,6 +56,7 @@
 #include "utils.h"
 
 #define VERSION "1.0.1rc"
+
 #define MAX_IP_PACKET_SIZE 65536
 #define HOST_TIMEOUT 5
 
@@ -518,7 +519,7 @@ int process_socket(config_desc_t *config) {
 
     if (bind_interface != NULL) {
         memset(&ifr, 0, sizeof(ifr));
-        snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), bind_interface);
+        snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", bind_interface);
         if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, (void *) &ifr, sizeof(ifr)) < 0) {
             slog(LOG_ERR, verbose_level, use_syslog, "Cannot bind socket to interface [%s]", bind_interface);
             exit(EXIT_FAILURE);
@@ -573,6 +574,7 @@ int process_socket(config_desc_t *config) {
         }
 
         if (fds[0].revents & POLLIN) {
+
             memset(buf, 0, sizeof(buf));
             n = recvfrom(sockfd, buf, MAX_IP_PACKET_SIZE, 0, (struct sockaddr *) &cliaddr, &cli_len);
             if (n <= 0) {
@@ -582,6 +584,8 @@ int process_socket(config_desc_t *config) {
 
             struct iphdr *ip_hdr = (struct iphdr *) buf;
             slog(LOG_DEBUG, verbose_level, use_syslog, "[%d] bytes received, IP header is %d bytes.", n, ip_hdr->ihl * 4);
+
+
             if ((ip_hdr->ihl * 4) < sizeof(struct iphdr) || (ip_hdr->ihl * 4) >= n) {
                 slog(LOG_WARNING, verbose_level, use_syslog, "Malformed IP packet: invalid IHL value %d", ip_hdr->ihl);
                 continue;
